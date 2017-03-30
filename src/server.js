@@ -47,7 +47,7 @@ app.get('/results/:testId', async function(req, res) {
     }
 });
 
-app.get('/finish', async function(req, res) {
+app.get('/finish/:id', async function(req, res) {
     try {
         console.log(req.params);
         res.send(await connector.results(req.params.id));
