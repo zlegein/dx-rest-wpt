@@ -23,7 +23,7 @@ exports.default = class {
             },
             promise: (appId, location) => new Promise(function(resolve, reject) {
                 console.log(`Running test for app ${appId}`);
-                wpt.runTest(`https://twitter.com/marcelduran`, {location: 'Dulles:Firefox', pingback: 'http://10.105.33.135:9000/finish', }, (err, result) => {
+                wpt.runTest(`https://twitter.com/marcelduran`, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/finish', }, (err, result) => {
                     if(err) reject(err);
                     console.log(result);
                     resolve(result)
@@ -135,7 +135,7 @@ exports.default = class {
     }
 
     async results(testId) {
-        let getPageSpeedDataFn = this.getPageSpeedData(testId);
+        let getPageSpeedDataFn = this.getTestResults(testId);
         return await new _brakes(getPageSpeedDataFn.promise, getPageSpeedDataFn.options).exec(testId);
     }
 }

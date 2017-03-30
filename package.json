@@ -2,7 +2,7 @@
     "name": "dx-rest-wpt",
     "license": "UNLICENSED",
     "scripts": {
-        "start": "yarn run start:nodemon",
+        "start": "npm run start:nodemon",
         "start:nodemon": "nodemon --harmony --nolazy ./src/server.js"
     },
     "dependencies": {
