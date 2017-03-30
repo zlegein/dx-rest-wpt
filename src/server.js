@@ -7,10 +7,10 @@ let connector = new _connector.default();
 
 
 
-app.get('/run/:appId', async function(req, res) {
+app.get('/run', async function(req, res) {
   try {
-    console.log(req.params.appId);
-    res.send(await connector.run(req.params.appId));
+    console.log(req.query.appId);
+    res.send(await connector.run(req.query.appId));
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
