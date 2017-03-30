@@ -6,6 +6,7 @@ var _brakes = require('brakes');
 var webPageTest = require('webpagetest');
 var lodash = require('lodash');
 var retry = require('retry');
+var requestPromise = require('request-promise');
 
 const wpt = new webPageTest('https://www.webpagetest.org', 'A.8eb836f531f7040290d2bd6e5f70fae4');
 
@@ -23,7 +24,7 @@ exports.default = class {
             },
             promise: (appId, location) => new Promise(function(resolve, reject) {
                 console.log(`Running test for app ${appId}`);
-                wpt.runTest(`https://twitter.com/marcelduran`, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/finish', }, (err, result) => {
+                wpt.runTest(`twitter.com/zlegein`, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/results', }, (err, result) => {
                     if(err) reject(err);
                     console.log(result);
                     resolve(result)
@@ -67,43 +68,6 @@ exports.default = class {
         }
     }
 
-    getTestStatusRetry(testId) {
-        return {
-            options: {
-                name: 'WebPageTestGetTestStatus',
-                waitThreshold: 0,
-                timeout: 60000
-            },
-            promise: (testId) => new Promise(function (resolve, reject) {
-                console.log(`get test status ${testId}`);
-                let operation = retry.operation();
-                operation.attempt(function (currentAttempt) {
-                    console.log(currentAttempt);
-                    let promise = new Promise(function (res, rej) {
-                        wpt.getTestStatus(testId, (err, result) => {
-                            if (err) {
-                                rej(err)
-                            }
-                            if (result.statusCode != 200) {
-                                rej(result.statusText);
-                            }
-                            res(result)
-                        });
-                    });
-                    promise.then((result) => {
-                        console.log("resolve");
-                        resolve(result);
-                    })
-                    .catch(err => {
-                        if (operation.retry(err)) {
-                            console.log(err);
-                        }
-                    });
-                })
-            })
-        }
-    }
-
     getTestStatus(testId) {
         return {
             options: {
@@ -111,6 +75,7 @@ exports.default = class {
                 waitThreshold: 0
             },
             promise: (testId) => new Promise(function (resolve, reject) {
+                console.log(`Get status for test ${testId}`);
                 wpt.getTestStatus(testId, (err, result) => {
                     if(err) reject(err);
                     resolve(result)
@@ -119,23 +84,56 @@ exports.default = class {
         }
     }
 
+    tagTestResults(testId) {
+        let rp = requestPromise;
+        return {
+            options: {
+                name: 'WebPageTestGetTestStatus',
+                waitThreshold: 0
+            },
+            promise: (testId) => rp({
+                method: "POST",
+                uri: `https://api.bitbucket.org/2.0/repositories/zlegein/dx-rest-wpt/refs/tags`,
+                headers: {
+                    'Authorization': 'Basic emxlZ2VpbjpQYWthbDBsMA=='
+                },
+                body: {
+                    "name" : `${testId}`,
+                    "target" : {
+                        "hash" : "2041e248c7d0a4bbb2a94ea97cd3c901858dd1c0"
+                    }
+                },
+                json: true
+            })
+        }
+    }
+
     async run(appId) {
-        let runTestFn = this.runTest(appId);
-        return await new _brakes(runTestFn.promise, runTestFn.options).exec(appId);
+        let call = this.runTest(appId);
+        return await new _brakes(call.promise, call.options).exec(appId);
     }
 
     async locations(filter) {
-        let locationFn = this.getLocations(filter);
-        return await new _brakes(locationFn.promise, locationFn.options).exec(filter);
+        let call = this.getLocations(filter);
+        return await new _brakes(call.promise, call.options).exec(filter);
     }
 
     async status(testId) {
-        let getTestStatusFn = this.getTestStatus(testId);
-        return await new _brakes(getTestStatusFn.promise, getTestStatusFn.options).exec(testId);
+        let call = this.getTestStatus(testId);
+        return await new _brakes(call.promise, call.options).exec(testId);
     }
 
     async results(testId) {
-        let getPageSpeedDataFn = this.getTestResults(testId);
-        return await new _brakes(getPageSpeedDataFn.promise, getPageSpeedDataFn.options).exec(testId);
+        let call = this.getTestResults(testId);
+        let results = await new _brakes(call.promise, call.options).exec(testId);
+        console.log(results);
+        return await this.tag(testId)
+    }
+
+    async tag(testId) {
+        let call = this.tagTestResults(testId);
+        let results = new _brakes(call.promise, call.options).exec(testId);
+        console.log(results);
+        return results;
     }
 }

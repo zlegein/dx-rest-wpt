@@ -9,6 +9,7 @@
         "brakes": "^2.5.1",
         "express": "^4.14.0",
         "lodash": "^4.17.4",
+        "request-promise": "^4.2.0",
         "retry": "^0.10.1",
         "webpagetest": "^0.3.4"
     },

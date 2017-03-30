@@ -47,10 +47,20 @@ app.get('/results/:testId', async function(req, res) {
     }
 });
 
-app.get('/finish', async function(req, res) {
+app.get('/results', async function(req, res) {
     try {
         console.log(req.query.id);
         res.send(await connector.results(req.query.id));
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+});
+
+app.get('/tag/:testId', async function(req, res) {
+    try {
+        console.log(req.params.testId);
+        res.send(await connector.tag(req.params.testId));
     } catch (err) {
         console.log(err);
         res.sendStatus(500);
