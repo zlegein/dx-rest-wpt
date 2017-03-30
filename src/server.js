@@ -47,10 +47,10 @@ app.get('/results/:testId', async function(req, res) {
     }
 });
 
-app.get('/finish/:id', async function(req, res) {
+app.get('/finish', async function(req, res) {
     try {
-        console.log(req.params);
-        res.send(await connector.results(req.params.id));
+        console.log(req.query.id);
+        res.send(await connector.results(req.query.id));
     } catch (err) {
         console.log(err);
         res.sendStatus(500);
