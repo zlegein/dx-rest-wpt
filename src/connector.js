@@ -15,16 +15,16 @@ exports.default = class {
         console.log("Hello");
     }
 
-    runTest(appId, location) {
+    runTest(appId, commit) {
         return {
             options: {
                 name: 'WebPageTestRunTest',
                 waitThreshold: 0,
                 timeout: 60000
             },
-            promise: (appId, location) => new Promise(function(resolve, reject) {
-                console.log(`Running test for app ${appId}`);
-                wpt.runTest(appId, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/results', }, (err, result) => {
+            promise: (appId, commit) => new Promise(function(resolve, reject) {
+                console.log(`Running test for ${appId} for commit ${commit}`);
+                wpt.runTest(appId, {location: 'Dulles:Firefox', pingback: `http://54.68.115.228:9000/results/${commit}`, }, (err, result) => {
                     if(err) reject(err);
                     console.log(result);
                     resolve(result)
@@ -40,7 +40,7 @@ exports.default = class {
                 waitThreshold: 0
             },
             promise: (testId) => new Promise(function(resolve, reject) {
-                console.log(`get page speed data for test ${testId}`);
+                console.log(`Get results for test ${testId}`);
                 wpt.getTestResults(testId, (err, result) => {
                     if(err) reject(err);
                     resolve(result)
@@ -49,24 +49,24 @@ exports.default = class {
         }
     }
 
-    getLocations(filter) {
-        return {
-            options: {
-                name: 'WebPageTestGetLocations',
-                waitThreshold: 0
-            },
-            promise: (appId) => new Promise(function(resolve, reject) {
-                console.log(`Here we are ${appId}`);
-                wpt.getLocations((err, result) => {
-                    if(err) reject(err);
-                    let locations = lodash.filter(result.response.data.location, function(location) {
-                        return lodash.includes(location.id, filter)
-                    });
-                    resolve(locations)
-                });
-            })
-        }
-    }
+    // getLocations(filter) {
+    //     return {
+    //         options: {
+    //             name: 'WebPageTestGetLocations',
+    //             waitThreshold: 0
+    //         },
+    //         promise: (appId) => new Promise(function(resolve, reject) {
+    //             console.log(`Here we are ${appId}`);
+    //             wpt.getLocations((err, result) => {
+    //                 if(err) reject(err);
+    //                 let locations = lodash.filter(result.response.data.location, function(location) {
+    //                     return lodash.includes(location.id, filter)
+    //                 });
+    //                 resolve(locations)
+    //             });
+    //         })
+    //     }
+    // }
 
     getTestStatus(testId) {
         return {
@@ -84,7 +84,8 @@ exports.default = class {
         }
     }
 
-    tagTestResults(testId) {
+    tagTestResults(testId, commit) {
+        console.log(`Tagging ${commit} with test ${testId}`);
         let rp = requestPromise;
         return {
             options: {
@@ -100,7 +101,7 @@ exports.default = class {
                 body: {
                     "name" : `${testId}`,
                     "target" : {
-                        "hash" : "2041e248c7d0a4bbb2a94ea97cd3c901858dd1c0"
+                        "hash" : `${commit}`
                     }
                 },
                 json: true
@@ -108,9 +109,9 @@ exports.default = class {
         }
     }
 
-    async run(appId) {
-        let call = this.runTest(appId);
-        return await new _brakes(call.promise, call.options).exec(appId);
+    async run(appId, commit) {
+        let call = this.runTest(appId, commit);
+        return await new _brakes(call.promise, call.options).exec(appId, commit);
     }
 
     async locations(filter) {
@@ -123,16 +124,16 @@ exports.default = class {
         return await new _brakes(call.promise, call.options).exec(testId);
     }
 
-    async results(testId) {
+    async results(testId, commit) {
         let call = this.getTestResults(testId);
         let results = await new _brakes(call.promise, call.options).exec(testId);
         console.log(results);
-        return await this.tag(testId)
+        return await this.tag(testId, commit)
     }
 
-    async tag(testId) {
-        let call = this.tagTestResults(testId);
-        let results = await new _brakes(call.promise, call.options).exec(testId);
+    async tag(testId, commit) {
+        let call = this.tagTestResults(testId, commit);
+        let results = await new _brakes(call.promise, call.options).exec(testId, commit);
         console.log(results);
         return results;
     }

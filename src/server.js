@@ -7,9 +7,8 @@ let connector = new _connector.default();
 
 
 
-app.get('/run', async function(req, res) {
+app.get('/run/:commit', async function(req, res) {
   try {
-    console.log(req.query.appId);
     res.send(await connector.run(req.query.appId));
   } catch (err) {
     console.log(err);
@@ -19,7 +18,6 @@ app.get('/run', async function(req, res) {
 
 app.get('/locations/:filter', async function(req, res) {
     try {
-        console.log(req.params.filter);
         res.send(await connector.locations(req.params.filter));
     } catch (err) {
         console.log(err);
@@ -29,7 +27,6 @@ app.get('/locations/:filter', async function(req, res) {
 
 app.get('/status/:testId', async function(req, res) {
     try {
-        console.log(req.params.testId);
         res.send(await connector.status(req.params.testId));
     } catch (err) {
         console.log(err);
@@ -39,7 +36,6 @@ app.get('/status/:testId', async function(req, res) {
 
 app.get('/results/:testId', async function(req, res) {
     try {
-        console.log(req.params.testId);
         res.send(await connector.results(req.params.testId));
     } catch (err) {
         console.log(err);
@@ -47,9 +43,8 @@ app.get('/results/:testId', async function(req, res) {
     }
 });
 
-app.get('/results', async function(req, res) {
+app.get('/results/:commit', async function(req, res) {
     try {
-        console.log(req.query.id);
         res.send(await connector.results(req.query.id));
     } catch (err) {
         console.log(err);
@@ -59,7 +54,6 @@ app.get('/results', async function(req, res) {
 
 app.get('/tag/:testId', async function(req, res) {
     try {
-        console.log(req.params.testId);
         res.send(await connector.tag(req.params.testId));
     } catch (err) {
         console.log(err);
