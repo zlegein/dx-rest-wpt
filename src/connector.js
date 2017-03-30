@@ -24,7 +24,7 @@ exports.default = class {
             },
             promise: (appId, location) => new Promise(function(resolve, reject) {
                 console.log(`Running test for app ${appId}`);
-                wpt.runTest(`twitter.com/zlegein`, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/results', }, (err, result) => {
+                wpt.runTest(appId, {location: 'Dulles:Firefox', pingback: 'http://54.68.115.228:9000/results', }, (err, result) => {
                     if(err) reject(err);
                     console.log(result);
                     resolve(result)
