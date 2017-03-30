@@ -132,7 +132,7 @@ exports.default = class {
 
     async tag(testId) {
         let call = this.tagTestResults(testId);
-        let results = new _brakes(call.promise, call.options).exec(testId);
+        let results = await new _brakes(call.promise, call.options).exec(testId);
         console.log(results);
         return results;
     }
